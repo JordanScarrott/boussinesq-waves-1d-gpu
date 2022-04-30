@@ -139,8 +139,8 @@ classdef Boussinesq
                 
                 if i == 1
                     % Get E, F, G, F1, and G1 for i=1
-                    obj.E(:,i) = Compute.E(obj.n(:,i), obj.u(i).u, obj.h, [obj.a1 obj.a2 obj.dx]);
-                    obj.F(:,i) = Compute.F(obj.n(:,i), obj.u(i).u, obj.g, obj.dx);
+                    obj.E(:,i) = Compute.E(obj.n(:,i), obj.u(:,i), obj.h, [obj.a1 obj.a2 obj.dx]);
+                    obj.F(:,i) = Compute.F(obj.n(:,i), obj.u(:,i), obj.g, obj.dx);
             
                     % PREDICTOR - 1st Order AB
                     obj.n(:,i+1) = obj.n(:,i) + obj.dt * obj.E(:,i);
@@ -156,7 +156,7 @@ classdef Boussinesq
                 end
             
                 % Compute u and v
-                obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
+                obj.u(:,i+1) = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
             
                 % Add boundary conditions
                 [obj.n(:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
@@ -166,12 +166,12 @@ classdef Boussinesq
                 while ((obj.n_error(i) > obj.tol || obj.u_error(i) > obj.tol))
                     % Track errors for the corrector step
                     obj.n_est(:,2) = obj.n(:,i+1);
-                    obj.u_est(:,2) = obj.u(i+1).u;
+                    obj.u_est(:,2) = obj.u(:,i+1);
                     obj.corrector_count(i) = obj.corrector_count(i) + 1;
             
                     % Compute E, F, G, F1, G1 
-                    obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(i+1).u, obj.h, [obj.a1 obj.a2 obj.dx]);
-                    obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(i+1).u, obj.g, obj.dx);
+                    obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(:,i+1), obj.h, [obj.a1 obj.a2 obj.dx]);
+                    obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(:,i+1), obj.g, obj.dx);
 
                     if i == 1
                         % CORRECTOR - 2nd Order AM
@@ -188,14 +188,14 @@ classdef Boussinesq
                     end
                     
                     % Compute u and v
-                    obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
+                    obj.u(:,i+1) = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
                     
                     % Add boundary conditions
                     [obj.n(:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
 
                     % Store estimates for this iteration so we can compute error
                     obj.n_est(:,1) = obj.n(:,i+1);
-                    obj.u_est(:,1) = obj.u(i+1).u;
+                    obj.u_est(:,1) = obj.u(:,i+1);
             
                     % Compute error for n, u, and v
                     obj.n_error(i) = sum(abs(obj.n_est(:,1) - obj.n_est(:,2)), [1 2]) / sum(abs(obj.n_est(:,1)), [1 2]);
@@ -214,8 +214,8 @@ classdef Boussinesq
                 end
                 
                 % Update E, F, G, F1, and G1 for the finalized i+1
-                obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(i+1).u, obj.h, [obj.a1 obj.a2 obj.dx]);
-                obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(i+1).u, obj.g, obj.dx);
+                obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(:,i+1), obj.h, [obj.a1 obj.a2 obj.dx]);
+                obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(:,i+1), obj.g, obj.dx);
             
                 % Move the current estimates to the old estimate slots
                 obj.n_est(:,2) = obj.n_est(:,1);
@@ -224,7 +224,7 @@ classdef Boussinesq
                 if (obj.filtering == 1)
                     if rem(i,obj.filter_period) == 0
                         obj.n(:,i+1) = filter2d(obj.n(:,i+1));
-                        obj.u(i+1).u = filter2d(obj.u(i+1).u);
+                        obj.u(:,i+1) = filter2d(obj.u(:,i+1));
                     end
                 end
             end
