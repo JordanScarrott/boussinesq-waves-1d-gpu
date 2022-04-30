@@ -15,10 +15,10 @@ classdef InitialCondition
     end
 
     methods
-        function obj = InitialCondition(selection, n_, A0_, x_, y_)
+        function obj = InitialCondition(selection, n_, A0_, x_)
             switch(selection)
                 case obj.EXPONENTIAL
-                    obj.n = obj.initial_exp(n_, A0_, x_, y_);
+                    obj.n = obj.initial_exp(n_, A0_, x_);
                     obj.SELECTION = "EXPONENTIAL";
                 case obj.GAUSSIAN
                     obj.n = obj.initial_gaussian_2d(n_, A0_);
@@ -34,13 +34,12 @@ classdef InitialCondition
             end
         end
 
-        function n = initial_exp(obj, n, A0, x, y)
+        function n = initial_exp(obj, n, A0, x)
             dims = size(n);
             
-            X = x .* ones(dims(1), dims(2));
-            Y = y' .* ones(dims(1), dims(2));
+            X = x .* ones(1, dims(1));
             
-            n = A0 * exp(-2*((X - 3.75).^2 + (Y - 3.75).^2));
+            n = A0 * exp(-2*((X - 3.75).^2));
         end
 
         function n = initial_gaussian_2d(obj, n, A0)
