@@ -10,76 +10,31 @@ classdef Compute
         % Test String
         % First Run patel2020_v[#] then enter following
         % compute_E(n(:,:,1), u(i).u, u(i).v, h, [a1 a2 b1 b2 g dx dy])
-        function E_new = E(ni, ui, vi, h, p)
+        function E_new = E(ni, ui, h, p)
             a1i = p(1);
             a2i = p(2);
-            b1i = p(3);
-            b2i = p(4);
-            gi = p(5);
-            dxi = p(6);
-            dyi = p(7);
+            dxi = p(3);
             
             % Setting up sub-components pf E
             uxx = doublederiv2d(ui, 1, dxi);
-            vyy = doublederiv2d(vi, 2, dyi);
-            uxy = deriv2d(deriv2d(ui, 1, dxi), 2, dyi);
-            vxy = deriv2d(deriv2d(vi, 1, dxi), 2, dyi);
                     
-            huxx = doublederiv2d(h .* ui, 1, dxi);
-            hvyy = doublederiv2d(h .* vi, 2, dyi);
-            huxy = deriv2d(deriv2d(h .* ui, 1, dxi), 2, dyi);
-            hvxy = deriv2d(deriv2d(h .* vi, 1, dxi), 2, dyi);
-        
+            huxx = doublederiv2d(h .* ui, 1, dxi);        
             
             % Computing components of E
             E_1 = deriv2d((h + ni) .* ui, 1, dxi);
-            E_2 = deriv2d((h + ni) .* vi, 2, dyi);
-            E_3 = a1i * h.^3 .* (uxx + vxy);
-            E_4 = a2i * h.^2 .* (huxx + hvxy);
-            E_34 = deriv2d(E_3 + E_4, 1, dxi);
-            E_5 = a1i * h.^3 .* (vyy + uxy);
-            E_6 = a2i * h.^2 .* (hvyy + huxy);
-            E_56 = deriv2d(E_5 + E_6, 2, dyi);
-            
+            E_3 = a1i * h.^3 .* (uxx + 0);
+            E_4 = a2i * h.^2 .* (huxx + 0);
+            E_34 = deriv2d(E_3 + E_4, 1, dxi);            
             
             % Adding together final components of E and sizing the arrays correctly
-            E_new = -E_1 - E_2 - E_34 - E_56;
+            E_new = -E_1 - E_34;
         end
 
-        function F_new = F(ni, ui, vi, g, dxi, dyi)
+        function F_new = F(ni, ui, g, dxi)
             ux = deriv2d(ui, 1, dxi);
-            uy = deriv2d(ui, 2, dyi);
             nix = deriv2d(ni, 1, dxi);
         
-            F_new = -g * nix - (ui .* ux + vi .* uy);
-        end
-
-        function F1_new = F1(h, vi, dxi, dyi, b1, b2)
-            vx = deriv2d(vi, 1, dxi);
-            vxy = deriv2d(vx, 2, dyi);
-            
-            hvx = deriv2d(h .* vi, 1, dxi);
-            hvxy = deriv2d(hvx, 2, dyi);
-            
-            F1_new = -h .* (b1*(h .* vxy) + b2*hvxy);
-        end
-
-        function G_new = G(ni, ui, vi, g, dxi, dyi)
-            vx = deriv2d(vi, 1, dxi);
-            vy = deriv2d(vi, 2, dyi);
-            niy = deriv2d(ni, 2, dyi);
-        
-            G_new = -g * niy - (vi .* vy + ui .* vx);
-        end
-
-        function G1_new = G1(h, ui, dxi, dyi, b1, b2)
-            ux = deriv2d(ui, 1, dxi);
-            uxy = deriv2d(ux, 2, dyi);
-            
-            hux = deriv2d(h .* ui, 1, dxi);
-            huxy = deriv2d(hux, 2, dyi);
-            
-            G1_new = -h .* (b1*(h .* uxy) + b2*huxy);
+            F_new = -g * nix - (ui .* ux);
         end
 
         function nt_new = nt(ni,ui,h,za_coefficient,dx,dy)
