@@ -139,115 +139,92 @@ classdef Boussinesq
                 
                 if i == 1
                     % Get E, F, G, F1, and G1 for i=1
-                    obj.E(:,:,i) = Compute.E(obj.n(:,:,i), obj.u(i).u, obj.u(i).v, obj.h, [obj.a1 obj.a2 obj.b1 obj.b2 obj.g obj.dx obj.dy]);
-                    obj.F(:,:,i) = Compute.F(obj.n(:,:,i), obj.u(i).u, obj.u(i).v, obj.g, obj.dx, obj.dy);
-                    obj.G(:,:,i) = Compute.G(obj.n(:,:,i), obj.u(i).u, obj.u(i).v, obj.g, obj.dx, obj.dy);
-                    obj.F1(:,:,i) = Compute.F1(obj.h, obj.u(i).v, obj.dx, obj.dy, obj.b1, obj.b2);
-                    obj.G1(:,:,i) = Compute.G1(obj.h, obj.u(i).u, obj.dx, obj.dy, obj.b1, obj.b2);
+                    obj.E(:,i) = Compute.E(obj.n(:,i), obj.u(i).u, obj.h, [obj.a1 obj.a2 obj.dx]);
+                    obj.F(:,i) = Compute.F(obj.n(:,i), obj.u(i).u, obj.g, obj.dx);
             
                     % PREDICTOR - 1st Order AB
-                    obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt * obj.E(:,:,i);
-                    obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt * obj.F(:,:,i);
-                    obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt * obj.G(:,:,i);
+                    obj.n(:,i+1) = obj.n(:,i) + obj.dt * obj.E(:,i);
+                    obj.U(:,i+1) = obj.U(:,i) + obj.dt * obj.F(:,i);
                 elseif i == 2
                     % PREDICTOR - 2nd Order AB
-                    obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt/2 * (3*obj.E(:,:,i) - obj.E(:,:,i-1));
-                    obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt/2 * (3*obj.F(:,:,i) - obj.F(:,:,i-1)) + obj.F(:,:,i) - obj.F(:,:,i-1);
-                    obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt/2 * (3*obj.G(:,:,i) - obj.G(:,:,i-1)) + obj.G(:,:,i) - obj.G(:,:,i-1);
+                    obj.n(:,i+1) = obj.n(:,i) + obj.dt/2 * (3*obj.E(:,i) - obj.E(:,:,i-1));
+                    obj.U(:,i+1) = obj.U(:,i) + obj.dt/2 * (3*obj.F(:,i) - obj.F(:,:,i-1)) + obj.F(:,i) - obj.F(:,:,i-1);
                 else
                     % PREDICTOR SCHEME - 3rd Order AB scheme
-                    obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt/12 * (23*obj.E(:,:,i) - 16*obj.E(:,:,i-1) + 5*obj.E(:,:,i-2));
-                    obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt/12 * (23*obj.F(:,:,i) - 16*obj.F(:,:,i-1) + 5*obj.F(:,:,i-2)) + 2*obj.F1(:,:,i) - 3*obj.F1(:,:,i-1) + obj.F1(:,:,i-2);
-                    obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt/12 * (23*obj.G(:,:,i) - 16*obj.G(:,:,i-1) + 5*obj.G(:,:,i-2)) + 2*obj.G1(:,:,i) - 3*obj.G1(:,:,i-1) + obj.G1(:,:,i-2);
+                    obj.n(:,i+1) = obj.n(:,i) + obj.dt/12 * (23*obj.E(:,i) - 16*obj.E(:,:,i-1) + 5*obj.E(:,:,i-2));
+                    obj.U(:,i+1) = obj.U(:,i) + obj.dt/12 * (23*obj.F(:,i) - 16*obj.F(:,:,i-1) + 5*obj.F(:,:,i-2));
                 end
             
                 % Compute u and v
-                obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,:,i+1));
-                obj.u(i+1).v = solve_for_v(obj.v_coeff_mat, obj.V(:,:,i+1));
+                obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
             
                 % Add boundary conditions
-                [obj.n(:,:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
+                [obj.n(:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
                 
                 
                 % Check if we need to keep iterating the corrector
-                while ((obj.n_error(i) > obj.tol || obj.u_error(i) > obj.tol || obj.v_error(i) > obj.tol))
+                while ((obj.n_error(i) > obj.tol || obj.u_error(i) > obj.tol))
                     % Track errors for the corrector step
-                    obj.n_est(:,:,2) = obj.n(:,:,i+1);
-                    obj.u_est(:,:,2) = obj.u(i+1).u;
-                    obj.v_est(:,:,2) = obj.u(i+1).v;
+                    obj.n_est(:,2) = obj.n(:,i+1);
+                    obj.u_est(:,2) = obj.u(i+1).u;
                     obj.corrector_count(i) = obj.corrector_count(i) + 1;
             
                     % Compute E, F, G, F1, G1 
-                    obj.E(:,:,i+1) = Compute.E(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.h, [obj.a1 obj.a2 obj.b1 obj.b2 obj.g obj.dx obj.dy]);
-                    obj.F(:,:,i+1) = Compute.F(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.g, obj.dx, obj.dy);
-                    obj.G(:,:,i+1) = Compute.G(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.g, obj.dx, obj.dy);
-                    obj.F1(:,:,i+1) = Compute.F1(obj.h, obj.u(i+1).v, obj.dx, obj.dy, obj.b1, obj.b2);
-                    obj.G1(:,:,i+1) = Compute.G1(obj.h, obj.u(i+1).u, obj.dx, obj.dy, obj.b1, obj.b2);
-            
+                    obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(i+1).u, obj.h, [obj.a1 obj.a2 obj.dx]);
+                    obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(i+1).u, obj.g, obj.dx);
+
                     if i == 1
                         % CORRECTOR - 2nd Order AM
-                        obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt/2 * (obj.E(:,:,i+1) + obj.E(:,:,i));
-                        obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt/2 * (obj.F(:,:,i+1) + obj.F(:,:,i)) + obj.F1(:,:,i+1) - obj.F1(:,:,i);
-                        obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt/2 * (obj.G(:,:,i+1) + obj.G(:,:,i)) + obj.G1(:,:,i+1) - obj.G1(:,:,i);
+                        obj.n(:,i+1) = obj.n(:,i) + obj.dt/2 * (obj.E(:,i+1) + obj.E(:,i));
+                        obj.U(:,i+1) = obj.U(:,i) + obj.dt/2 * (obj.F(:,i+1) + obj.F(:,i));
                     elseif i ==2
                         % CORRECTOR - 3rd Order AM
-                        obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt/12 * (5*obj.E(:,:,i+1) + 8*obj.E(:,:,i) - obj.E(:,:,i-1));
-                        obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt/12 * (5*obj.F(:,:,i+1) + 8*obj.F(:,:,i) - obj.F(:,:,i-1)) + obj.F1(:,:,i+1) - obj.F1(:,:,i);
-                        obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt/12 * (5*obj.G(:,:,i+1) + 8*obj.G(:,:,i) - obj.G(:,:,i-1)) + obj.G1(:,:,i+1) - obj.G1(:,:,i);
+                        obj.n(:,i+1) = obj.n(:,i) + obj.dt/12 * (5*obj.E(:,i+1) + 8*obj.E(:,i) - obj.E(:,:,i-1));
+                        obj.U(:,i+1) = obj.U(:,i) + obj.dt/12 * (5*obj.F(:,i+1) + 8*obj.F(:,i) - obj.F(:,:,i-1));
                     else
                         % CORRECTOR SCHEME - 4th Order AM scheme
-                        obj.n(:,:,i+1) = obj.n(:,:,i) + obj.dt/24 * (9*obj.E(:,:,i+1) + 19*obj.E(:,:,i) - 5*obj.E(:,:,i-1) + obj.E(:,:,i-2));
-                        obj.U(:,:,i+1) = obj.U(:,:,i) + obj.dt/24 * (9*obj.F(:,:,i+1) + 19*obj.F(:,:,i) - 5*obj.F(:,:,i-1) + obj.F(:,:,i-2)) + obj.F1(:,:,i+1) - obj.F1(:,:,i);
-                        obj.V(:,:,i+1) = obj.V(:,:,i) + obj.dt/24 * (9*obj.G(:,:,i+1) + 19*obj.G(:,:,i) - 5*obj.G(:,:,i-1) + obj.G(:,:,i-2)) + obj.G1(:,:,i+1) - obj.G1(:,:,i);
+                        obj.n(:,i+1) = obj.n(:,i) + obj.dt/24 * (9*obj.E(:,i+1) + 19*obj.E(:,i) - 5*obj.E(:,:,i-1) + obj.E(:,:,i-2));
+                        obj.U(:,i+1) = obj.U(:,i) + obj.dt/24 * (9*obj.F(:,i+1) + 19*obj.F(:,i) - 5*obj.F(:,:,i-1) + obj.F(:,:,i-2));
                     end
                     
                     % Compute u and v
-                    obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,:,i+1));
-                    obj.u(i+1).v = solve_for_v(obj.v_coeff_mat, obj.V(:,:,i+1));
+                    obj.u(i+1).u = solve_for_u(obj.u_coeff_mat, obj.U(:,i+1));
                     
                     % Add boundary conditions
-                    [obj.n(:,:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
+                    [obj.n(:,i+1), obj.u(i+1)] = boundary_cond(obj.n(:,i+1), obj.u(i+1),obj.boundary_depth,obj.dx,obj.dy,obj.A0,obj.t(i),obj.dt);
 
                     % Store estimates for this iteration so we can compute error
-                    obj.n_est(:,:,1) = obj.n(:,:,i+1);
-                    obj.u_est(:,:,1) = obj.u(i+1).u;
-                    obj.v_est(:,:,1) = obj.u(i+1).v;
+                    obj.n_est(:,1) = obj.n(:,i+1);
+                    obj.u_est(:,1) = obj.u(i+1).u;
             
                     % Compute error for n, u, and v
-                    obj.n_error(i) = sum(abs(obj.n_est(:,:,1) - obj.n_est(:,:,2)), [1 2]) / sum(abs(obj.n_est(:,:,1)), [1 2]);
-                    obj.u_error(i) = sum(abs(obj.u_est(:,:,1) - obj.u_est(:,:,2)), [1 2]) / sum(abs(obj.u_est(:,:,1)), [1 2]);
-                    obj.v_error(i) = sum(abs(obj.v_est(:,:,1) - obj.v_est(:,:,2)), [1 2]) / sum(abs(obj.v_est(:,:,1)), [1 2]);
+                    obj.n_error(i) = sum(abs(obj.n_est(:,1) - obj.n_est(:,2)), [1 2]) / sum(abs(obj.n_est(:,1)), [1 2]);
+                    obj.u_error(i) = sum(abs(obj.u_est(:,1) - obj.u_est(:,2)), [1 2]) / sum(abs(obj.u_est(:,1)), [1 2]);
                     
                     clc
                     fprintf('corrector_count = %.d\n', obj.corrector_count(i))
                     fprintf('n_error = %.10f\n', obj.n_error(i))
                     fprintf('u_error = %.10f\n', obj.u_error(i))
-                    fprintf('v_error = %.10f\n', obj.v_error(i))
                     
                     if (obj.corrector_count(i) == obj.limit)
                         fprintf('\n\nProgram terminated at:\nIteration: %d \nCorrector step: %d\n', i, obj.corrector_count(i))
-                        fprintf('Errors this iteration:\nn_error: %.10f \nu_error: %.10f \nv_error: %.10f\n', obj.n_error(i), obj.u_error(i), obj.v_error(i))
+                        fprintf('Errors this iteration:\nn_error: %.10f \nu_error: %.10f\n', obj.n_error(i), obj.u_error(i))
                         error('Non-convergeance')
                     end
                 end
                 
                 % Update E, F, G, F1, and G1 for the finalized i+1
-                obj.E(:,:,i+1) = Compute.E(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.h, [obj.a1 obj.a2 obj.b1 obj.b2 obj.g obj.dx obj.dy]);
-                obj.F(:,:,i+1) = Compute.F(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.g, obj.dx, obj.dy);
-                obj.G(:,:,i+1) = Compute.G(obj.n(:,:,i+1), obj.u(i+1).u, obj.u(i+1).v, obj.g, obj.dx, obj.dy);
-                obj.F1(:,:,i+1) = Compute.F1(obj.h, obj.u(i+1).v, obj.dx, obj.dy, obj.b1, obj.b2);
-                obj.G1(:,:,i+1) = Compute.G1(obj.h, obj.u(i+1).u, obj.dx, obj.dy, obj.b1, obj.b2);
+                obj.E(:,i+1) = Compute.E(obj.n(:,i+1), obj.u(i+1).u, obj.h, [obj.a1 obj.a2 obj.dx]);
+                obj.F(:,i+1) = Compute.F(obj.n(:,i+1), obj.u(i+1).u, obj.g, obj.dx);
             
                 % Move the current estimates to the old estimate slots
-                obj.n_est(:,:,2) = obj.n_est(:,:,1);
-                obj.u_est(:,:,2) = obj.u_est(:,:,1);
-                obj.v_est(:,:,2) = obj.v_est(:,:,1);  
+                obj.n_est(:,2) = obj.n_est(:,1);
+                obj.u_est(:,2) = obj.u_est(:,1);
 
                 if (obj.filtering == 1)
                     if rem(i,obj.filter_period) == 0
-                        obj.n(:,:,i+1) = filter2d(obj.n(:,:,i+1));
+                        obj.n(:,i+1) = filter2d(obj.n(:,i+1));
                         obj.u(i+1).u = filter2d(obj.u(i+1).u);
-                        obj.u(i+1).v = filter2d(obj.u(i+1).v);
                     end
                 end
             end
@@ -265,9 +242,9 @@ classdef Boussinesq
             obj.T = 5;
 
             % Plotting Final Meshes
-            % chart_titles = ["n(:,:,i)", "U(:,:,i)", "V(:,:,i)", "E(:,:,i)", "F(:,:,i)", "G(:,:,i)"];
-%             chart_titles = ["n(:,:,i)", "U(:,:,i)", "u(:).u", "E(:,:,i)", "F(:,:,i)", "u(:).v"];
-            chart_titles = ["n(:,:,i)"];
+            % chart_titles = ["n(:,i)", "U(:,i)", "V(:,i)", "E(:,i)", "F(:,i)", "G(:,i)"];
+%             chart_titles = ["n(:,i)", "U(:,i)", "u(:).u", "E(:,i)", "F(:,i)", "u(:).v"];
+            chart_titles = ["n(:,i)"];
             % display_meshes(obj.animate, obj.T, cat(3,obj.n,obj.U,obj.V,obj.E,obj.F,obj.G), obj.iterations+1, chart_titles)
             % display_meshes(obj.animate, obj.T, cat(3,obj.n,obj.U,obj.V,obj.E), obj.iterations+1, chart_titles)
 %             display_meshes(obj.animate, obj.T, cat(3, obj.n, obj.U, obj.u(:).u, obj.E, obj.F, obj.u(:).v), obj.iterations+1, chart_titles)
@@ -285,7 +262,7 @@ classdef Boussinesq
             ylim([-0.05 0.06])
 
             figure(3)
-            contour(obj.n(:,:,iterationsToDisplay+1))
+            contour(obj.n(:,iterationsToDisplay+1))
         end
 
         function obj = saveParamData(obj)
