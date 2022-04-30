@@ -12,10 +12,8 @@ classdef Boussinesq
         h0;
         h;
         dx;
-        dy;
         dt;
         real_x;
-        real_y;
 
         limit;
         filtering;
@@ -24,14 +22,11 @@ classdef Boussinesq
 
         scale;
         xmax;
-        ymax;
 
         x;
-        y;
         t;
 
         xn;
-        yn;
 
         floorProfile;
         initialCondition;
@@ -49,26 +44,18 @@ classdef Boussinesq
         u;
         ut;
         U;
-        V;
         E;
         F;
-        F1;
-        G;
-        G1;
 
         n_est;
         u_est;
-        v_est;
         
         n_error;
         u_error;
-        v_error;
         corrector_count;
 
         u_coeff_mat;
-        v_coeff_mat;
     end
-    
     methods
         function obj = Boussinesq(setup_args)
             % Number of iterations
@@ -90,32 +77,26 @@ classdef Boussinesq
 
             % Spacial and Time steps
             obj.dx = setup_args(5);
-            obj.dy = setup_args(6);
-            obj.dt = setup_args(7);
+            obj.dt = setup_args(6);
 
             % Real length
-            obj.real_x = setup_args(8);
-            obj.real_y = setup_args(9);
-
+            obj.real_x = setup_args(7);
 
             % Temporary spatial scaling factor
             obj.scale = 1;
             % Max steps in x direction
             obj.xmax = obj.real_x*obj.scale;
-            obj.ymax = obj.real_y*obj.scale;
             
             % Discrete Dimensions
             obj.x = 0:obj.dx:obj.xmax;
-            obj.y = 0:obj.dy:obj.ymax;
             obj.t = 0:obj.dt:obj.iterations*obj.dt;
             
             % Number of cells in the x and y directions
             obj.xn = numel(obj.x);
-            obj.yn = numel(obj.y);
 
             % Water depth (floor profile)
-            obj.floorProfile = FloorProfile(setup_args(10), obj.x, obj.h0);
-            obj.h = obj.floorProfile.y_data .* ones(obj.yn, obj.xn);
+            obj.floorProfile = FloorProfile(setup_args(8), obj.x, obj.h0);
+            obj.h = obj.floorProfile.y_data;
 
             % Constants
             obj.beta = -0.531;
@@ -127,37 +108,29 @@ classdef Boussinesq
             obj.g = 9.81;
             
             % Surface Elevation & Horizontal Velocities and Velocity-Potentials
-            obj.n = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.nt = zeros(obj.yn,obj.xn, obj.iterations);
-            obj.u = Vector_Volume([obj.yn, obj.xn], obj.iterations+1);
-            obj.ut = Vector_Volume([obj.yn, obj.xn], obj.iterations+1);
-            obj.U = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.V = zeros(obj.yn, obj.xn, obj.iterations);
+            obj.n = zeros(obj.xn, obj.iterations);
+            obj.nt = zeros(obj.xn, obj.iterations);
+            obj.u = zeros(obj.xn, obj.iterations+1);
+            obj.ut = zeros(obj.xn, obj.iterations+1);
+            obj.U = zeros(obj.xn, obj.iterations);
             % Potentials
-            obj.E = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.F = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.F1 = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.G = zeros(obj.yn, obj.xn, obj.iterations);
-            obj.G1 = zeros(obj.yn, obj.xn, obj.iterations);
+            obj.E = zeros(obj.xn, obj.iterations);
+            obj.F = zeros(obj.xn, obj.iterations);
             
             % Adams-Moulton Estimates: n_est[current, old]
-            obj.n_est = zeros(obj.yn, obj.xn, 2);
-            obj.u_est = zeros(obj.yn, obj.xn, 2);
-            obj.v_est = zeros(obj.yn, obj.xn, 2);
+            obj.n_est = zeros(obj.xn, 2);
+            obj.u_est = zeros(obj.xn, 2);
             % Adams-Moulton errors
-            obj.n_error = inf * ones(1,obj.iterations);
-            obj.u_error = inf * ones(1,obj.iterations);
-            obj.v_error = inf * ones(1,obj.iterations);
-            obj.corrector_count = zeros(1,obj.iterations);
-            
+            obj.n_error = inf * ones(1, obj.iterations);
+            obj.u_error = inf * ones(1, obj.iterations);
+            obj.corrector_count = zeros(1, obj.iterations);
             
             % Precompute coefficient matrices
-            obj.u_coeff_mat = u_coeff_matrices(obj.h, obj.b1, obj.b2, obj.dx, obj.xn, obj.yn);
-            obj.v_coeff_mat = v_coeff_matrices(obj.h, obj.b1, obj.b2, obj.dy, obj.xn, obj.yn);
+            obj.u_coeff_mat = u_coeff_matrices(obj.h, obj.b1, obj.b2, obj.dx, obj.xn, 1);
             
             % Initial Conditions
-            obj.initialCondition = InitialCondition(setup_args(11), obj.n(:,:,1), obj.A0, obj.x, obj.y);
-            obj.n(:,:,1) = obj.initialCondition.n;
+            obj.initialCondition = InitialCondition(setup_args(9), obj.n(:,1), obj.A0, obj.x);
+            obj.n(:,1) = obj.initialCondition.n;
         end
 
         function obj = solve(obj)
