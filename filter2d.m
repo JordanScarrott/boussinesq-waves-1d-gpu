@@ -24,10 +24,10 @@ function filtered_data = filter2d(n)
     temp(:,k) = 1/64 * (44 * n(:,k) + 15 * (n(:,k+1) + n(:,k-1)) - 6 * (n(:,k+2)+ n(:,k-2)) + 1 * (n(:,k+3) + n(:,k-3)));
     
     % Then in the y direction for all x values
-    % j=4;
-    % filtered_data(j,:) = 1/64 * (44 * temp(j,:) + 15 * (temp(j+1,:) + temp(j-1,:)) - 6 * (temp(j+2,:)+ temp(j-2,:)) + 1 * (temp(j+3,:) + temp(j-3,:)));
-    % j=dims(1)-3;
-    % filtered_data(j,:) = 1/64 * (44 * temp(j,:) + 15 * (temp(j+1,:) + temp(j-1,:)) - 6 * (temp(j+2,:)+ temp(j-2,:)) + 1 * (temp(j+3,:) + temp(j-3,:)));
+    j=4;
+    filtered_data(j,:) = 1/64 * (44 * temp(j,:) + 15 * (temp(j+1,:) + temp(j-1,:)) - 6 * (temp(j+2,:)+ temp(j-2,:)) + 1 * (temp(j+3,:) + temp(j-3,:)));
+    j=dims(1)-3;
+    filtered_data(j,:) = 1/64 * (44 * temp(j,:) + 15 * (temp(j+1,:) + temp(j-1,:)) - 6 * (temp(j+2,:)+ temp(j-2,:)) + 1 * (temp(j+3,:) + temp(j-3,:)));
     
     
     % And now a 2nd Order Filter for the Boundaries
@@ -38,10 +38,10 @@ function filtered_data = filter2d(n)
     temp(:,k) = 1/16 * (10 * n(:,k) + 4 * (n(:,k+1) + n(:,k-1)) - 1 * (n(:,k+2)+ n(:,k-2)));
     
     % Then in the y direction for all x values
-    % j=3;
-    % filtered_data(j,:) = 1/16 * (10 * temp(j,:) + 4 * (temp(j+1,:) + temp(j-1,:)) - 1 * (temp(j+2,:)+ temp(j-2,:)));
-    % j=dims(1)-2;
-    % filtered_data(j,:) = 1/16 * (10 * temp(j,:) + 4 * (temp(j+1,:) + temp(j-1,:)) - 1 * (temp(j+2,:)+ temp(j-2,:)));
+    j=3;
+    filtered_data(j,:) = 1/16 * (10 * temp(j,:) + 4 * (temp(j+1,:) + temp(j-1,:)) - 1 * (temp(j+2,:)+ temp(j-2,:)));
+    j=dims(1)-2;
+    filtered_data(j,:) = 1/16 * (10 * temp(j,:) + 4 * (temp(j+1,:) + temp(j-1,:)) - 1 * (temp(j+2,:)+ temp(j-2,:)));
     
     
     % And now a 1st Order Filter for the Boundaries
@@ -52,10 +52,10 @@ function filtered_data = filter2d(n)
     temp(:,k) = 1/4 * (2 * n(:,k) + 1 * (n(:,k+1) + n(:,k-1)));
     
     % Then in the y direction for all x values
-    % j=2;
-    % filtered_data(j,:) = 1/4 * (2 * temp(j,:) + 1 * (temp(j+1,:) + temp(j-1,:)));
-    % j=dims(1)-1;
-    % filtered_data(j,:) = 1/4 * (2 * temp(j,:) + 1 * (temp(j+1,:) + temp(j-1,:)));
+    j=2;
+    filtered_data(j,:) = 1/4 * (2 * temp(j,:) + 1 * (temp(j+1,:) + temp(j-1,:)));
+    j=dims(1)-1;
+    filtered_data(j,:) = 1/4 * (2 * temp(j,:) + 1 * (temp(j+1,:) + temp(j-1,:)));
     
     
     
