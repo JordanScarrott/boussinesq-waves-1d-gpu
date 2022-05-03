@@ -39,7 +39,7 @@ classdef InitialCondition
             
             X = x .* ones(1, dims(1));
             
-            n = A0 * exp(-2*((X - 3.75).^2));
+            n = A0 * exp(-2*((X - 37.5).^2));
         end
 
         function n = initial_gaussian_2d(obj, n, A0)
