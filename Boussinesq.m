@@ -158,7 +158,7 @@ classdef Boussinesq
                 obj.u(i+1,:) = solve_for_u(obj.u_coeff_mat, obj.U(i+1,:));
             
                 % Add boundary conditions
-                [obj.n(i+1,:), obj.u(i+1)] = boundary_cond(obj.n(i+1,:), obj.u(i+1),obj.boundary_depth,obj.dx,obj.A0,obj.t(i),obj.dt);
+                [obj.n(i+1,:), obj.u(i+1)] = BoundaryCondition.reflective_boundary(obj.n(i+1,:), obj.u(i+1));
                 
                 
                 % Check if we need to keep iterating the corrector
@@ -190,7 +190,7 @@ classdef Boussinesq
                     obj.u(i+1,:) = solve_for_u(obj.u_coeff_mat, obj.U(i+1,:));
                     
                     % Add boundary conditions
-                    [obj.n(i+1,:), obj.u(i+1)] = boundary_cond(obj.n(i+1,:), obj.u(i+1),obj.boundary_depth,obj.dx,obj.A0,obj.t(i),obj.dt);
+                    [obj.n(i+1,:), obj.u(i+1)] = BoundaryCondition.reflective_boundary(obj.n(i+1,:), obj.u(i+1));
 
                     % Store estimates for this iteration so we can compute error
                     obj.n_est(1,:) = obj.n(i+1,:);
@@ -265,8 +265,8 @@ classdef Boussinesq
             filter = {'.xlsx', 'Excel Sheet (.xlsx)';'*.*', 'All Files (*.*)'};
             [file,path,index] = uiputfile(filter, "Save File Name");
             
-            dataNames = ["iterations", "tol", "A0", "h0", "dx", "dy", "dt", "real_x", "real_y", "limit", "filtering", "filter_period", "boundary_depth", "scale", "xmax", "ymax", "xn", "yn", "beta", "a1", "a2", "b1", "b2", "g", "obj.floorProfile.SELECTION", "obj.initialCondition.SELECTION"];
-            dataToSave = [obj.iterations, obj.tol, obj.A0, obj.h0, obj.dx, obj.dy, obj.dt, obj.real_x, obj.real_y, obj.limit, obj.filtering, obj.filter_period, obj.boundary_depth, obj.scale, obj.xmax, obj.ymax, obj.xn, obj.yn, obj.beta, obj.a1, obj.a2, obj.b1, obj.b2, obj.g];
+            dataNames = ["iterations", "tol", "A0", "h0", "dx", "dt", "real_x", "limit", "filtering", "filter_period", "boundary_depth", "scale", "xmax", "xn", "beta", "a1", "a2", "b1", "b2", "g", "obj.floorProfile.SELECTION", "obj.initialCondition.SELECTION"];
+            dataToSave = [obj.iterations, obj.tol, obj.A0, obj.h0, obj.dx, obj.dt, obj.real_x, obj.limit, obj.filtering, obj.filter_period, obj.boundary_depth, obj.scale, obj.xmax, obj.xn, obj.beta, obj.a1, obj.a2, obj.b1, obj.b2, obj.g];
             textData = [obj.floorProfile.SELECTION, obj.initialCondition.SELECTION];
 
             dataToSave = [dataNames; dataToSave textData];
