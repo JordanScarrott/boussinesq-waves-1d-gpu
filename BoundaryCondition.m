@@ -28,7 +28,7 @@ classdef BoundaryCondition
 			n_(d:end-d+1,1) = (n(d:end-d+1,2:p+1) * b)/25;
 
 			% Right side
-			n_(d:end-d+1,end) = (n(d:end-d+1,end-p:end-1) * b)/25;
+			n_(d:end-d+1,end) = (n(d:end-d+1,end-p:end-1) * b(end:-1:1))/25;
 		end
 
 
