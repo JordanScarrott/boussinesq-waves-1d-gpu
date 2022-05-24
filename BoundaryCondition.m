@@ -60,36 +60,28 @@ classdef BoundaryCondition
 		% d is boundary depth
 		% a is wave amplitude
 		% t is current time
-		function [n_,u_] = wavemaker_boundary(n,u,d,A,t_curr,dt)
-
-			dims_n = size(n);
-
+		function [n_,u_] = wavemaker_boundary(n, u, h0, t_curr, dt)
 			n_ = n;
 			u_ = u;
-		%     d = 2;
-				
+			d = 2;
+
+            A0 = 0.0045;
+            f = 1;
+            wavelength = 1;
 			% Math constants
-			h0 = 0.45;
-			w = 1;
-			k = 1;
+			w = 2 * pi * f;
+			k = 2 * pi / wavelength;
 			a = -0.390;
-			
-			c = 1;
-			
-			
-			t = ((d-1:-1:0) * dt + t_curr) .* ones(dims_n(1),d);
-			
+
+
 			% Wave elevation
-			n_(:,1:d) = A * sin(c*t);
+			n_(1:d) = A0 * sin(w*(t_curr+(d-1)*dt:-dt:t_curr));
 			
 			% The correct wave speed for this elevation
-			coeff = (w)/(k*h0*(1-(a+1/3)*(k*h0)^2));
+			coeff = w / (k*h0*(1-(a+1/3)*(k*h0)^2));
 			
-			u_.u(:,1:d) = coeff * n_(:,1:d).*cos(c*t);
-			u_.v(:,1:d) = coeff * n_(:,1:d).*sin(c*t);
-			
-					
-
+			% w*t gives you the radians rotated in t units of time
+			u_ = coeff * n_;
 		end
 
 	end
