@@ -158,7 +158,7 @@ classdef Boussinesq
                 obj.u(i+1,:) = solve_for_u(obj.u_coeff_mat, obj.U(i+1,:));
             
                 % Add boundary conditions
-                [obj.n(i+1,:), obj.u(i+1)] = BoundaryCondition.reflective_boundary(obj.n(i+1,:), obj.u(i+1));
+                [obj.n(i+1,:), obj.u(i+1,:)] = BoundaryCondition.wavemaker_boundary(obj.n(i+1,:), obj.u(i+1), obj.h0, i*obj.dt, obj.dt);
                 
                 
                 % Check if we need to keep iterating the corrector
@@ -190,7 +190,7 @@ classdef Boussinesq
                     obj.u(i+1,:) = solve_for_u(obj.u_coeff_mat, obj.U(i+1,:));
                     
                     % Add boundary conditions
-                    [obj.n(i+1,:), obj.u(i+1)] = BoundaryCondition.reflective_boundary(obj.n(i+1,:), obj.u(i+1));
+                    [obj.n(i+1,:), obj.u(i+1,:)] = BoundaryCondition.wavemaker_boundary(obj.n(i+1,:), obj.u(i+1), obj.h0, i*obj.dt, obj.dt);
 
                     % Store estimates for this iteration so we can compute error
                     obj.n_est(1,:) = obj.n(i+1,:);
@@ -250,10 +250,13 @@ classdef Boussinesq
 %             display_meshes(obj.animate, obj.T, obj.n, iterationsToDisplay+1, chart_titles);
 
 
+            figure(1)
+            plot(obj.A0-obj.h)
             % Plotting in one dimension
             for i=1:iterationsToDisplay
                 figure(10)
                 plot(obj.n(i,:))
+%                 plot(0:obj.dx:obj.dx*obj.xn, obj.n(i,:), 0:obj.dx:obj.dx*obj.xn, obj.h);
                 ylim([-0.05 0.06])
                 pause(obj.T/iterationsToDisplay)
             end
