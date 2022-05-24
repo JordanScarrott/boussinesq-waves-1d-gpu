@@ -4,11 +4,13 @@ classdef FloorProfile
     
     properties(Constant)
         FLAT = 0;
-        SINGLE_BAR = 1;
+        SLOPE = 1;
+        SINGLE_BAR = 2;
 
 %         Here we speak in terms of the floor height above zero instead of
 %         the depth of the water but what is returned is the water depth
-        FLAT_DATA = [[0, 0]; [0, 0]; [0, 0]; [0, 0]];
+        FLAT_DATA = [[0, 0]; [0, 25]; [0, 5]; [0, 1]];
+        SLOPE_DATA = [[0, 0]; [0.3/13, 0]; [1, 1]];
         SINGLE_BAR_DATA = [[0, 0]; [0.2, 0]; [0.3, 1/3]; [0.4, 1/3]; [0.45, 1/5]; [0.75, 1/5]; [0.98, 1]; [1, 1]];
     %             obj.h = obj.h0-obj.h0/(obj.real_x*12.7/13) * ((ones(obj.yn, obj.xn) .* obj.x ./ obj.scale) - (obj.real_x*0.3/13));
     end
@@ -25,6 +27,9 @@ classdef FloorProfile
                 case obj.FLAT
                     obj.profileDescription = Profile_description(obj.FLAT_DATA, x_);
                     obj.SELECTION = "FLAT";
+                case obj.SLOPE
+                    obj.profileDescription = Profile_description(obj.SLOPE_DATA, x_);
+                    obj.SELECTION = "SLOPE";
                 case obj.SINGLE_BAR
                     obj.profileDescription = Profile_description(obj.SINGLE_BAR_DATA, x_);
                     obj.SELECTION = "SINGLE_BAR";
@@ -40,6 +45,8 @@ classdef FloorProfile
             switch(profileName)
                 case "FLAT"
                     profileEnum = FloorProfile.FLAT;
+                case "SLOPE"
+                    profileEnum = FloorProfile.SLOPE;
                 case "SINGLE_BAR"
                     profileEnum = FloorProfile.SINGLE_BAR;
                 otherwise
