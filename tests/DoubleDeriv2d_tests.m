@@ -1,4 +1,4 @@
-classdef Deriv2d_tests
+classdef DoubleDeriv2d_tests
 
 	properties
 		args;
@@ -7,7 +7,7 @@ classdef Deriv2d_tests
 	end
 
 	methods
-		function obj = Deriv2d_tests(args)
+		function obj = DoubleDeriv2d_tests(args)
 			obj.args = args;
 			obj.status = false;
 
@@ -15,8 +15,8 @@ classdef Deriv2d_tests
 			obj.u_data = [
 				1 ,  3,  5,  7,  9;
 				11, 13, 15, 17, 19;
-				21, 23, 25, 27, 29;
 				31, 33, 35, 37, 39;
+				61, 63, 65, 67, 69;
 			];
 		end
 
@@ -26,19 +26,19 @@ classdef Deriv2d_tests
 
 			% Define the array of test functions
 			tests = [
-				obj.testDeriv2dX,
-				obj.testDeriv2dY
+				obj.testDoubleDeriv2dX,
+				obj.testDoubleDeriv2dY
 			];
 
 			% Define a name for each test
 			testNames = [
-				"deriv2d in X direction",
-				"deriv2d in Y direction"
+				"doublederiv2d in X direction",
+				"doublederiv2d in Y direction"
 			];
 
 
 			% Run all tests
-			fprintf(1, "\n\nDeriv2d_tests:\n");
+			fprintf(1, "\n\nDoubleDeriv2d_tests:\n");
 			for i = 1:numel(tests)
 				test = tests(i);
                 status = test();
@@ -53,36 +53,36 @@ classdef Deriv2d_tests
 		end
 
 		% deriv2d in X direction %
-		function status = testDeriv2dX(obj)
+		function status = testDoubleDeriv2dX(obj)
 			direction = 1;
 			delta = 0.5;
 
 			expectedResult = [
-				4, 4, 4, 4, 4
-				4, 4, 4, 4, 4
-				4, 4, 4, 4, 4
-				4, 4, 4, 4, 4
+				0, 0, 0, 0, 0
+				0, 0, 0, 0, 0
+				0, 0, 0, 0, 0
+				0, 0, 0, 0, 0
 			];
 
-			result = deriv2d(obj.u_data, direction, delta);
+			result = doublederiv2d(obj.u_data, direction, delta);
 
 			TestRunner.assertEqual(result, expectedResult);
 			status = true;
 		end
 
 		% deriv2d in Y direction %
-		function status = testDeriv2dY(obj)
+		function status = testDoubleDeriv2dY(obj)
 			direction = 2;
-			delta = 0.05;
+			delta = 1;
 
 			expectedResult = [
-				200, 200, 200, 200, 200
-				200, 200, 200, 200, 200
-				200, 200, 200, 200, 200
-				200, 200, 200, 200, 200
+				10, 10, 10, 10, 10
+				10, 10, 10, 10, 10
+				10, 10, 10, 10, 10
+				10, 10, 10, 10, 10
 			];
 
-			result = deriv2d(obj.u_data, direction, delta);
+			result = doublederiv2d(obj.u_data, direction, delta);
 
 			TestRunner.assertEqual(result, expectedResult);
 			status = true;
