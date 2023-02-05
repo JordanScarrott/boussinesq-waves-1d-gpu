@@ -24,26 +24,30 @@ classdef Deriv2d_tests
 		% Tests %
 		function status = runAllUnitTests(obj)
 
+			% Define the array of test functions
 			tests = [
 				obj.testDeriv2dX,
 				obj.testDeriv2dY
 			];
 
+			% Define a name for each test
 			testNames = [
-				"deriv2d in X direction\n",
-				"deriv2d in Y direction\n"
+				"deriv2d in X direction",
+				"deriv2d in Y direction"
 			];
 
 
+			% Run all tests
+			fprintf(1, "\n\nDeriv2d_tests:\n");
 			for i = 1:numel(tests)
 				test = tests(i);
                 status = test();
 
 				if (status == false)
-					fprintf(2, testNames(i));
+					fprintf(2, testNames(i) + ": Failed\n");
 					break;
 				else 
-					fprintf(1, testNames(i));
+					fprintf(1, testNames(i) + ": Passed\n");
 				end
 			end
 		end
